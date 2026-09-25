@@ -13,7 +13,7 @@ test.beforeEach(async ({ page }) => {
 
 
 test('successful login shows inventory', async ({ page }) => {
-  // Expect a title "to contain" a substring.
+  
   await expect(page.locator('[data-test="inventory-container"]')).toBeVisible();
 });
 

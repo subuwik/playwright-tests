@@ -7,6 +7,6 @@ await page.goto('https://www.saucedemo.com/');
   await page.locator('[data-test="password"]').fill('sdffsd');
   await page.locator('[data-test="login-button"]').click();
 
-  // Expects page to have a heading with the name of Installation.
+  
   await expect(page.getByRole('alert')).toContainText('Epic sadface: Username and password do not match any user in this service');
 });
