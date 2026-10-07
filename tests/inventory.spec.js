@@ -1,27 +1,41 @@
-// @ts-check
 import { test, expect } from '@playwright/test';
+import { LoginPage } from '../pages/LoginPage.js';
+import { InventoryPage } from '../pages/InventoryPage.js';
 
-test.beforeEach(async ({ page }) => {
-  await page.goto('https://www.saucedemo.com/');
-  await page.locator('[data-test="username"]').click();
-  await page.locator('[data-test="username"]').fill('standard_user');
-  await page.locator('[data-test="password"]').click();
-  await page.locator('[data-test="password"]').fill('secret_sauce');
-  await page.locator('[data-test="login-button"]').click();
-});
+test.describe('Inventory and Navigation Tests', () => {
+  let loginPage;
+  let inventoryPage;
 
+  test.beforeEach(async ({ page }) => {
+    loginPage = new LoginPage(page);
+    inventoryPage = new InventoryPage(page);
 
+    await loginPage.goto();
+    await loginPage.login('standard_user', 'secret_sauce');
+  });
 
-test('successful login shows inventory', async ({ page }) => {
-  
-  await expect(page.locator('[data-test="inventory-container"]')).toBeVisible();
-});
+  test('successful login shows inventory', async () => {
+    await expect(inventoryPage.inventoryContainer).toBeVisible();
+    await expect(inventoryPage.inventoryItems).toHaveCount(6);
+  });
 
+  test('add and remove item updates cart badge', async () => {
+    await inventoryPage.addBikeLightToCart();
+    await expect(inventoryPage.cartBadge).toHaveText('1');
 
+    await inventoryPage.removeBikeLightFromCart();
+    await expect(inventoryPage.cartBadge).toHaveCount(0);
+  });
 
-test('add and remove item updates cart badge', async ({ page }) => {
-  await page.locator('[data-test="add-to-cart-sauce-labs-bike-light"]').click();
-   await expect(page.locator('.shopping_cart_badge')).toHaveText('1');
-  await page.locator('[data-test="remove-sauce-labs-bike-light"]').click();
-   await expect(page.locator('.shopping_cart_badge')).toHaveCount(0);
+  test('adding multiple items increments cart badge', async () => {
+    await inventoryPage.addItemToCart();
+    await inventoryPage.addBikeLightToCart();
+    await expect(inventoryPage.cartBadge).toHaveText('2');
+  });
+
+  test('logout from sidebar menu redirects to login page', async () => {
+    await inventoryPage.logout();
+    await expect(loginPage.loginButton).toBeVisible();
+    await expect(loginPage.usernameInput).toBeVisible();
+  });
 });
